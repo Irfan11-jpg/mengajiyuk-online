@@ -1,9 +1,30 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* ... isi default Laravel/Vite tetap di atas ... */
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold shadow-sm hover:bg-emerald-700 transition;
+    }
+
+    .btn-guru {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-amber-700 text-white text-sm font-semibold shadow-sm hover:bg-amber-800 transition;
+    }
+
+    .card {
+        @apply bg-white rounded-2xl border border-gray-100 shadow-sm p-5;
+    }
+
+    .input-field {
+        @apply w-full px-4 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition;
+    }
+
+    .badge-approved {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700;
+    }
+
+    .badge-pending {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700;
+    }
 }
