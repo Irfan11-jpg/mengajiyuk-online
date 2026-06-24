@@ -8,6 +8,10 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * Tabel users menyimpan SEMUA pengguna aplikasi MengajiYuk.
+     * Tidak ada tabel terpisah untuk santri dan guru.
+     * Perbedaan hanya ditentukan oleh kolom 'role'.
      */
     public function up(): void
     {
@@ -17,18 +21,28 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('role', ['guru', 'santri'])->default('santri');
+
+            // Menentukan jenis pengguna:
+            // 'guru'   = akses dashboard guru, validasi setoran santri
+            // 'santri' = akses dashboard santri, input hafalan sendiri
+            $table->enum('role', ['guru', 'santri'])->default('santri');
+
+            // Kelas hanya diisi oleh santri, contoh: 10A, 11B, 12C
+            // Guru dibiarkan null karena tidak memiliki kelas
             $table->string('kelas')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
         });
 
+        // Tabel untuk fitur reset password (bawaan Laravel, jangan dihapus)
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // Tabel untuk manajemen sesi login (bawaan Laravel, jangan dihapus)
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -41,6 +55,7 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
+     * Dijalankan saat: php artisan migrate:rollback
      */
     public function down(): void
     {

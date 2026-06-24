@@ -4,180 +4,204 @@ namespace App\Http\Controllers;
 
 use App\Models\Hafalan;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
     /**
-     * Daftar 30 juz dan nama surah perwakilan (disederhanakan untuk demo).
-     */
-    private function daftarJuz(): array
-    {
-        $namaSurah = [
-            1 => 'Al-Fatihah', 2 => 'Al-Baqarah', 3 => 'Ali Imran', 4 => 'An-Nisa',
-            5 => 'Al-Maidah', 6 => 'Al-Anam', 7 => 'Al-Araf', 8 => 'Al-Anfal',
-            9 => 'At-Taubah', 10 => 'Yunus', 11 => 'Hud', 12 => 'Yusuf',
-            13 => 'Ar-Rad', 14 => 'Ibrahim', 15 => 'Al-Hijr', 16 => 'An-Nahl',
-            17 => 'Al-Isra', 18 => 'Al-Kahf', 19 => 'Maryam', 20 => 'Taha',
-            21 => 'Al-Anbiya', 22 => 'Al-Hajj', 23 => 'Al-Muminun', 24 => 'An-Nur',
-            25 => 'Al-Furqan', 26 => 'Asy-Syuara', 27 => 'An-Naml', 28 => 'Al-Qasas',
-            29 => 'Al-Ankabut', 30 => 'An-Nas (& sekitarnya)',
-        ];
-
-        return $namaSurah;
-    }
-
-    /**
-     * Dashboard untuk role santri.
+     * METHOD: santri()
+     * Dashboard utama santri.
+     * Menampilkan statistik, chart, grid 30 juz, dan setoran terbaru.
      */
     public function santri(): View
     {
-        $user = Auth::user();
+        $santri = Auth::user();
 
-        $totalApproved = Hafalan::where('user_id', $user->id)->approved()->count();
-        $totalZiyadah = Hafalan::where('user_id', $user->id)->ziyadah()->approved()->count();
-        $totalMurojaah = Hafalan::where('user_id', $user->id)->murojaah()->approved()->count();
+        $totalApproved = $santri->hafalans()->approved()->count();
+        $totalZiyadah  = $santri->hafalans()->approved()->ziyadah()->count();
+        $totalMurojaah = $santri->hafalans()->approved()->murojaah()->count();
 
-        $totalJuzTersentuh = Hafalan::where('user_id', $user->id)
+        $hafalanPerSurah = $santri->hafalans()
+            ->approved()
+            ->selectRaw('nomor_surah, nama_surah, COUNT(*) as total')
+            ->groupBy('nomor_surah', 'nama_surah')
+            ->orderBy('nomor_surah')
+            ->get();
+
+        $surahSelesai = $santri->hafalans()
             ->approved()
             ->distinct('nomor_surah')
             ->count('nomor_surah');
 
-        $progressPersen = (int) round(($totalJuzTersentuh / 30) * 100);
+        $progressPersen = $surahSelesai > 0
+            ? round(($surahSelesai / 114) * 100, 1)
+            : 0;
 
-        $juzData = [];
-        $namaSurahJuz = $this->daftarJuz();
-        $hafalanPerJuz = Hafalan::where('user_id', $user->id)
-            ->approved()
-            ->get()
-            ->groupBy('nomor_surah');
+        $juzData = $this->buildJuzData($santri);
 
-        for ($i = 1; $i <= 30; $i++) {
-            $juzData[] = [
-                'nomor' => $i,
-                'nama' => $namaSurahJuz[$i] ?? "Juz $i",
-                'selesai' => $hafalanPerJuz->has($i),
-            ];
-        }
-
-        $chartLabels = collect($juzData)->pluck('nama')->take(10)->all();
-        $chartValues = collect($juzData)->take(10)->map(fn ($j) => $j['selesai'] ? 100 : 0)->all();
-
-        $setoranTerbaru = Hafalan::where('user_id', $user->id)
+        $setoranTerbaru = $santri->hafalans()
+            ->with('guru')
             ->latest()
             ->take(5)
             ->get();
 
-        return view('santri.dashboard', [
-            'totalApproved' => $totalApproved,
-            'totalZiyadah' => $totalZiyadah,
-            'totalMurojaah' => $totalMurojaah,
-            'progressPersen' => $progressPersen,
-            'juzData' => $juzData,
-            'setoranTerbaru' => $setoranTerbaru,
-            'chartLabels' => $chartLabels,
-            'chartValues' => $chartValues,
-        ]);
+        return view('santri.dashboard', compact(
+            'santri',
+            'totalApproved',
+            'totalZiyadah',
+            'totalMurojaah',
+            'hafalanPerSurah',
+            'surahSelesai',
+            'progressPersen',
+            'juzData',
+            'setoranTerbaru',
+        ));
     }
 
     /**
-     * Halaman detail progres 30 juz untuk santri.
+     * METHOD: progres()
+     * Halaman detail visualisasi 30 juz.
      */
     public function progres(): View
     {
-        $user = Auth::user();
-        $namaSurahJuz = $this->daftarJuz();
+        $santri = Auth::user();
 
-        $hafalanPerJuz = Hafalan::where('user_id', $user->id)
+        $juzData = $this->buildJuzData($santri);
+
+        $surahSelesai = $santri->hafalans()
             ->approved()
-            ->get()
-            ->groupBy('nomor_surah');
+            ->distinct('nomor_surah')
+            ->count('nomor_surah');
 
-        $juzData = [];
-        for ($i = 1; $i <= 30; $i++) {
-            $hafalanJuzIni = $hafalanPerJuz->get($i);
-            $juzData[] = [
-                'nomor' => $i,
-                'nama' => $namaSurahJuz[$i] ?? "Juz $i",
-                'selesai' => $hafalanPerJuz->has($i),
-                'jumlah_setoran' => $hafalanJuzIni ? $hafalanJuzIni->count() : 0,
-            ];
-        }
+        $progressPersen = $surahSelesai > 0
+            ? round(($surahSelesai / 114) * 100, 1)
+            : 0;
 
-        $totalSelesai = collect($juzData)->where('selesai', true)->count();
-        $progressPersen = (int) round(($totalSelesai / 30) * 100);
-
-        if ($progressPersen >= 100) {
-            $pesanMotivasi = 'Masya Allah, hafalan 30 juz Anda telah lengkap! Pertahankan dengan terus murojaah. 🎉';
-        } elseif ($progressPersen >= 75) {
-            $pesanMotivasi = 'Hampir selesai! Sedikit lagi menuju khatam 30 juz, semangat terus. 💪';
-        } elseif ($progressPersen >= 50) {
-            $pesanMotivasi = 'Sudah separuh jalan! Konsistensi adalah kunci, terus lanjutkan. 🌟';
-        } elseif ($progressPersen >= 25) {
-            $pesanMotivasi = 'Progres yang bagus, terus tingkatkan hafalan setiap harinya. 🌱';
-        } else {
-            $pesanMotivasi = 'Setiap ayat yang dihafal adalah langkah menuju kebaikan. Mulai dan konsisten! 🤲';
-        }
-
-        return view('santri.hafalan.progres', [
-            'juzData' => $juzData,
-            'progressPersen' => $progressPersen,
-            'pesanMotivasi' => $pesanMotivasi,
-        ]);
+        return view('santri.hafalan.progres', compact(
+            'santri',
+            'juzData',
+            'surahSelesai',
+            'progressPersen',
+        ));
     }
 
     /**
-     * Dashboard untuk role guru.
+     * METHOD: guru()
+     * Dashboard utama guru.
+     * Menampilkan statistik, chart setoran, daftar santri, dan pending.
      */
     public function guru(): View
     {
-        $totalSantri = User::santri()->count();
+        $guru = Auth::user();
 
-        $setoranHariIni = Hafalan::whereDate('created_at', Carbon::today())->count();
-
-        $totalPending = Hafalan::pending()->count();
+        $totalSantri    = User::santri()->count();
+        $setoranHariIni = Hafalan::whereDate('created_at', today())->count();
+        $setoranPending = Hafalan::pending()->count();
 
         $daftarSantri = User::santri()
             ->withCount([
-                'hafalans as total_hafalan' => fn ($q) => $q->approved(),
+                'hafalans as total_hafalan',
+                'hafalans as total_approved' => fn ($q) => $q->approved(),
+                'hafalans as total_pending'  => fn ($q) => $q->pending(),
             ])
-            ->get()
-            ->map(function ($santri) {
-                $totalJuzSantri = Hafalan::where('user_id', $santri->id)
-                    ->approved()
-                    ->distinct('nomor_surah')
-                    ->count('nomor_surah');
-
-                $santri->progress_persen = (int) round(($totalJuzSantri / 30) * 100);
-
-                return $santri;
-            });
-
-        $setoranPending = Hafalan::pending()
-            ->with('santri')
-            ->latest()
-            ->take(8)
+            ->orderBy('name')
             ->get();
 
-        $chart7Hari = [];
+        $setoranMenunggu = Hafalan::pending()
+            ->with('santri')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        $setoranPerHariRaw = Hafalan::selectRaw("DATE(created_at) as tanggal, COUNT(*) as total")
+            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+            ->groupBy('tanggal')
+            ->orderBy('tanggal')
+            ->pluck('total', 'tanggal');
+
+        $labels = [];
+        $data   = [];
         for ($i = 6; $i >= 0; $i--) {
-            $tanggal = Carbon::today()->subDays($i);
-            $chart7Hari[] = [
-                'label' => $tanggal->translatedFormat('D, d M'),
-                'jumlah' => Hafalan::whereDate('created_at', $tanggal)->count(),
+            $tanggal  = now()->subDays($i)->toDateString();
+            $labels[] = now()->subDays($i)->format('d M');
+            $data[]   = $setoranPerHariRaw[$tanggal] ?? 0;
+        }
+
+        return view('guru.dashboard', compact(
+            'guru',
+            'totalSantri',
+            'setoranHariIni',
+            'setoranPending',
+            'daftarSantri',
+            'setoranMenunggu',
+            'labels',
+            'data',
+        ));
+    }
+
+    /**
+     * METHOD PRIVATE: buildJuzData()
+     * Membangun array data 30 juz beserta status ada tidaknya hafalan.
+     */
+    private function buildJuzData(User $santri): array
+    {
+        $juzMapping = [
+            1  => ['start' => 1,   'end' => 2],
+            2  => ['start' => 2,   'end' => 2],
+            3  => ['start' => 2,   'end' => 3],
+            4  => ['start' => 3,   'end' => 4],
+            5  => ['start' => 4,   'end' => 4],
+            6  => ['start' => 4,   'end' => 5],
+            7  => ['start' => 5,   'end' => 6],
+            8  => ['start' => 6,   'end' => 7],
+            9  => ['start' => 7,   'end' => 8],
+            10 => ['start' => 8,   'end' => 9],
+            11 => ['start' => 9,   'end' => 11],
+            12 => ['start' => 11,  'end' => 12],
+            13 => ['start' => 12,  'end' => 14],
+            14 => ['start' => 15,  'end' => 16],
+            15 => ['start' => 17,  'end' => 18],
+            16 => ['start' => 18,  'end' => 20],
+            17 => ['start' => 21,  'end' => 22],
+            18 => ['start' => 23,  'end' => 25],
+            19 => ['start' => 25,  'end' => 27],
+            20 => ['start' => 27,  'end' => 29],
+            21 => ['start' => 29,  'end' => 33],
+            22 => ['start' => 33,  'end' => 36],
+            23 => ['start' => 36,  'end' => 39],
+            24 => ['start' => 39,  'end' => 41],
+            25 => ['start' => 41,  'end' => 45],
+            26 => ['start' => 46,  'end' => 51],
+            27 => ['start' => 51,  'end' => 57],
+            28 => ['start' => 58,  'end' => 66],
+            29 => ['start' => 67,  'end' => 77],
+            30 => ['start' => 78,  'end' => 114],
+        ];
+
+        $surahDisetorkan = $santri->hafalans()
+            ->approved()
+            ->pluck('nomor_surah')
+            ->unique()
+            ->toArray();
+
+        $juzData = [];
+        foreach ($juzMapping as $juz => $range) {
+            $adaHafalan = false;
+            for ($s = $range['start']; $s <= $range['end']; $s++) {
+                if (in_array($s, $surahDisetorkan)) {
+                    $adaHafalan = true;
+                    break;
+                }
+            }
+            $juzData[$juz] = [
+                'juz'         => $juz,
+                'ada_hafalan' => $adaHafalan,
+                'start_surah' => $range['start'],
+                'end_surah'   => $range['end'],
             ];
         }
 
-        return view('guru.dashboard', [
-            'totalSantri' => $totalSantri,
-            'setoranHariIni' => $setoranHariIni,
-            'totalPending' => $totalPending,
-            'daftarSantri' => $daftarSantri,
-            'setoranPending' => $setoranPending,
-            'chartLabels' => collect($chart7Hari)->pluck('label')->all(),
-            'chartValues' => collect($chart7Hari)->pluck('jumlah')->all(),
-        ]);
+        return $juzData;
     }
 }

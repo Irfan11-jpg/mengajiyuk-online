@@ -2,25 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Kolom yang boleh diisi secara massal melalui create() atau update().
+     * Kolom yang tidak ada di sini tidak bisa diisi dari luar (keamanan).
      */
     protected $fillable = [
         'name',
@@ -31,9 +24,8 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Kolom yang TIDAK boleh ditampilkan saat data diubah ke JSON atau array.
+     * Melindungi password agar tidak bocor ke response API atau view.
      */
     protected $hidden = [
         'password',
@@ -41,20 +33,31 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Casting otomatis tipe data kolom saat dibaca dari database.
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 
+    // =========================================================
+    // HELPER ROLE
+    // Fungsi sederhana untuk mengecek role user yang sedang login.
+    //
+    // Cara pakai di controller:
+    //   Auth::user()->isGuru()
+    //   Auth::user()->isSantri()
+    //
+    // Cara pakai di blade view:
+    //   @if(Auth::user()->isGuru())
+    //   @if(Auth::user()->isSantri())
+    // =========================================================
+
     /**
-     * Cek apakah user ini berperan sebagai guru.
+     * Kembalikan true jika user ini adalah guru.
      */
     public function isGuru(): bool
     {
@@ -62,31 +65,25 @@ class User extends Authenticatable
     }
 
     /**
-     * Cek apakah user ini berperan sebagai santri.
+     * Kembalikan true jika user ini adalah santri.
      */
     public function isSantri(): bool
     {
         return $this->role === 'santri';
     }
 
-    /**
-     * Scope query untuk hanya mengambil user dengan role santri.
-     */
-    public function scopeSantri(Builder $query): Builder
-    {
-        return $query->where('role', 'santri');
-    }
+    // =========================================================
+    // RELASI KE TABEL HAFALANS
+    // =========================================================
 
     /**
-     * Scope query untuk hanya mengambil user dengan role guru.
-     */
-    public function scopeGuru(Builder $query): Builder
-    {
-        return $query->where('role', 'guru');
-    }
-
-    /**
-     * Relasi ke semua hafalan milik user (jika dia santri).
+     * Semua setoran hafalan yang dimiliki santri ini.
+     * Satu santri bisa punya banyak setoran hafalan.
+     *
+     * Cara pakai di controller:
+     *   $santri->hafalans()->get()
+     *   $santri->hafalans()->approved()->count()
+     *   $santri->hafalans()->pending()->get()
      */
     public function hafalans(): HasMany
     {
@@ -94,10 +91,41 @@ class User extends Authenticatable
     }
 
     /**
-     * Relasi ke hafalan-hafalan yang sudah dinilai oleh user ini (jika dia guru).
+     * Semua setoran hafalan yang sudah dinilai oleh guru ini.
+     * Satu guru bisa menilai banyak setoran dari berbagai santri.
+     *
+     * Cara pakai di controller:
+     *   $guru->hafalanDinilai()->count()
+     *   $guru->hafalanDinilai()->latest()->get()
      */
     public function hafalanDinilai(): HasMany
     {
         return $this->hasMany(Hafalan::class, 'dinilai_oleh');
+    }
+
+    // =========================================================
+    // SCOPE QUERY
+    // Fungsi untuk memfilter query langsung dari model.
+    //
+    // Cara pakai:
+    //   User::santri()->get()              → semua santri
+    //   User::guru()->get()                → semua guru
+    //   User::santri()->where('kelas','10A')->get() → santri kelas 10A
+    // =========================================================
+
+    /**
+     * Filter query hanya mengembalikan user dengan role santri.
+     */
+    public function scopeSantri($query)
+    {
+        return $query->where('role', 'santri');
+    }
+
+    /**
+     * Filter query hanya mengembalikan user dengan role guru.
+     */
+    public function scopeGuru($query)
+    {
+        return $query->where('role', 'guru');
     }
 }

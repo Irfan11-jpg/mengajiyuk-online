@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,9 +11,16 @@ class Hafalan extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * CATATAN PENTING:
+     * Kita TIDAK perlu menulis $table = 'hafalans' secara manual.
+     * Laravel secara otomatis mencari tabel bernama 'hafalans'
+     * karena nama model 'Hafalan' + huruf 's' = 'hafalans'.
+     * Ini adalah konvensi plural otomatis Laravel (Eloquent ORM).
+     */
+
+    /**
+     * Kolom yang boleh diisi secara massal.
+     * Semua kolom tabel hafalans didaftarkan di sini.
      */
     protected $fillable = [
         'user_id',
@@ -31,7 +37,28 @@ class Hafalan extends Model
     ];
 
     /**
-     * Relasi ke santri pemilik hafalan ini.
+     * Casting tipe data agar kolom angka tidak dikembalikan sebagai string.
+     */
+    protected function casts(): array
+    {
+        return [
+            'nomor_surah' => 'integer',
+            'ayat_awal'   => 'integer',
+            'ayat_akhir'  => 'integer',
+        ];
+    }
+
+    // =========================================================
+    // RELASI KE MODEL USER
+    // =========================================================
+
+    /**
+     * Santri pemilik setoran hafalan ini.
+     * Setiap hafalan dimiliki oleh satu santri.
+     *
+     * Cara pakai:
+     *   $hafalan->santri        → objek User santrinya
+     *   $hafalan->santri->name  → nama santrinya
      */
     public function santri(): BelongsTo
     {
@@ -39,41 +66,57 @@ class Hafalan extends Model
     }
 
     /**
-     * Relasi ke guru yang menilai hafalan ini.
+     * Guru yang memberikan penilaian pada setoran ini.
+     * Nullable karena awalnya belum ada guru yang menilai.
+     *
+     * Cara pakai:
+     *   $hafalan->guru        → objek User gurunya (null jika pending)
+     *   $hafalan->guru->name  → nama gurunya
      */
     public function guru(): BelongsTo
     {
         return $this->belongsTo(User::class, 'dinilai_oleh');
     }
 
+    // =========================================================
+    // SCOPE QUERY
+    // Fungsi untuk memfilter hafalan berdasarkan kondisi tertentu.
+    //
+    // Cara pakai:
+    //   Hafalan::pending()->get()
+    //   Hafalan::approved()->count()
+    //   $santri->hafalans()->ziyadah()->get()
+    //   $santri->hafalans()->murojaah()->approved()->count()
+    // =========================================================
+
     /**
-     * Scope: hafalan yang masih menunggu penilaian guru.
+     * Filter hafalan yang statusnya masih pending (belum dinilai guru).
      */
-    public function scopePending(Builder $query): Builder
+    public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
     /**
-     * Scope: hafalan yang sudah disetujui guru.
+     * Filter hafalan yang sudah disetujui dan dinilai guru.
      */
-    public function scopeApproved(Builder $query): Builder
+    public function scopeApproved($query)
     {
         return $query->where('status', 'approved');
     }
 
     /**
-     * Scope: hafalan jenis ziyadah (hafalan baru).
+     * Filter hafalan yang jenisnya ziyadah (hafalan baru).
      */
-    public function scopeZiyadah(Builder $query): Builder
+    public function scopeZiyadah($query)
     {
         return $query->where('jenis', 'ziyadah');
     }
 
     /**
-     * Scope: hafalan jenis murojaah (mengulang hafalan lama).
+     * Filter hafalan yang jenisnya murojaah (pengulangan).
      */
-    public function scopeMurojaah(Builder $query): Builder
+    public function scopeMurojaah($query)
     {
         return $query->where('jenis', 'murojaah');
     }
