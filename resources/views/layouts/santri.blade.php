@@ -53,7 +53,8 @@
                 <span>Dashboard</span>
             </a>
 
-            <a href="{{ route('santri.hafalan.progres') }}"
+                {{-- DENGAN ini (mengarah ke index riwayat): --}}
+            <a href="{{ route('santri.hafalan.index') }}"
                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('santri.hafalan.*')
                           ? 'bg-emerald-600 text-white font-medium'
@@ -61,7 +62,7 @@
                 <span class="text-base">📖</span>
                 <span>Tracker Hafalan</span>
             </a>
-
+            
             <div class="pt-3 pb-1">
                 <p class="text-emerald-400 text-xs font-medium uppercase tracking-wider px-3 mb-2">
                     Segera Hadir

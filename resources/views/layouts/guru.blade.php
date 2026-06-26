@@ -59,12 +59,14 @@
                 </p>
             </div>
 
-            <span class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-amber-400 opacity-50 cursor-not-allowed">
+            <a href="{{ route('guru.validasi.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                      {{ request()->routeIs('guru.validasi.*')
+                         ? 'bg-amber-700 text-white font-medium'
+                         : 'text-amber-100 hover:bg-amber-800/50' }}">
                 <span class="text-base">✅</span>
                 <span>Validasi Setoran</span>
-                <span class="ml-auto text-xs bg-amber-950 text-amber-600 px-1.5 py-0.5 rounded">Soon</span>
-            </span>
-
+            </a>
             <span class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-amber-400 opacity-50 cursor-not-allowed">
                 <span class="text-base">📚</span>
                 <span>Buku Induk</span>
