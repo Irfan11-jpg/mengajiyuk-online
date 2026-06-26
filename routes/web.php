@@ -2,36 +2,24 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\HafalanController;
+use App\Http\Controllers\QuranController;
+use App\Http\Controllers\ValidasiController;
 use Illuminate\Support\Facades\Route;
 
 // =========================================================
 // HALAMAN ROOT
 // =========================================================
 Route::get('/', function () {
-
-    if (Auth::check()) {
-
-        if (Auth::user()->role === 'guru') {
-            return redirect()->route('guru.dashboard');
-        }
-
-        return redirect()->route('santri.dashboard');
-    }
-
     return redirect()->route('login');
 });
 
 // =========================================================
-// ROUTE AUTH
+// AUTH — LOGIN & LOGOUT (TANPA REGISTER)
 // =========================================================
 Route::middleware('guest')->group(function () {
-
-    Route::get('/login', [AuthController::class, 'showLogin'])
-        ->name('login');
-
-    Route::post('/login', [AuthController::class, 'login'])
-        ->name('login.post');
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])
@@ -39,48 +27,44 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 // =========================================================
-// ROUTE SANTRI
+// ROUTE GROUP SANTRI
 // =========================================================
 Route::middleware(['auth', 'role:santri'])
     ->prefix('santri')
     ->name('santri.')
     ->group(function () {
 
-        Route::get('/dashboard', [DashboardController::class, 'santri'])
-            ->name('dashboard');
+        // Mhs 1: Dashboard & progres 30 juz
+        Route::get('/dashboard', [DashboardController::class, 'santri'])->name('dashboard');
+        Route::get('/hafalan/progres', [DashboardController::class, 'progres'])->name('hafalan.progres');
 
-        Route::get('/hafalan/progres', [DashboardController::class, 'progres'])
-            ->name('hafalan.progres');
+        // Mhs 2: Quran Reader
+        Route::get('/quran', [QuranController::class, 'index'])->name('quran.index');
+        Route::get('/quran/{nomor}', [QuranController::class, 'show'])->name('quran.show');
 
-        // Route::get('/hafalan', [HafalanController::class, 'index'])->name('hafalan.index');
-        // Route::get('/hafalan/create', [HafalanController::class, 'create'])->name('hafalan.create');
-        // Route::post('/hafalan', [HafalanController::class, 'store'])->name('hafalan.store');
+        // Mhs 3: Form input & riwayat setoran hafalan
+        // PENTING: route /hafalan/create harus SEBELUM /hafalan/{id}
+        // agar Laravel tidak salah menganggap 'create' sebagai {id}
+        Route::get('/hafalan', [HafalanController::class, 'index'])->name('hafalan.index');
+        Route::get('/hafalan/create', [HafalanController::class, 'create'])->name('hafalan.create');
+        Route::post('/hafalan', [HafalanController::class, 'store'])->name('hafalan.store');
 
-        // Route::get('/jurnal', [JurnalController::class, 'index'])->name('jurnal.index');
-        // Route::post('/jurnal', [JurnalController::class, 'store'])->name('jurnal.store');
-
-        // Route::get('/quran', [QuranController::class, 'index'])->name('quran.index');
-        // Route::get('/quran/{surah}', [QuranController::class, 'show'])->name('quran.show');
     });
 
 // =========================================================
-// ROUTE GURU
+// ROUTE GROUP GURU
 // =========================================================
 Route::middleware(['auth', 'role:guru'])
     ->prefix('guru')
     ->name('guru.')
     ->group(function () {
 
-        Route::get('/dashboard', [DashboardController::class, 'guru'])
-            ->name('dashboard');
+        // Mhs 1: Dashboard guru
+        Route::get('/dashboard', [DashboardController::class, 'guru'])->name('dashboard');
 
-        // Route::get('/validasi', [ValidasiController::class, 'index'])->name('validasi.index');
-        // Route::post('/validasi/{hafalan}/approve', [ValidasiController::class, 'approve'])->name('validasi.approve');
+        // Mhs 3: Validasi setoran hafalan
+        Route::get('/validasi', [ValidasiController::class, 'index'])->name('validasi.index');
+        Route::get('/validasi/{id}/grade', [ValidasiController::class, 'grade'])->name('validasi.grade');
+        Route::post('/validasi/{id}/approve', [ValidasiController::class, 'approve'])->name('validasi.approve');
 
-        // Route::get('/buku-induk', [BukuIndukController::class, 'index'])->name('buku-induk.index');
-        // Route::get('/buku-induk/{santri}', [BukuIndukController::class, 'show'])->name('buku-induk.show');
-
-        // Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
-        // Route::get('/laporan/export/pdf', [LaporanController::class, 'exportPdf'])->name('laporan.pdf');
-        // Route::get('/laporan/export/excel', [LaporanController::class, 'exportExcel'])->name('laporan.excel');
     });
