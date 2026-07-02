@@ -63,7 +63,7 @@
 
 </div>
 
-{{-- Tabel Riwayat Setoran --}}
+{{-- Tabel Riwayat --}}
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
 
     <h3 class="font-semibold text-gray-700 mb-4">Semua Riwayat Setoran</h3>
@@ -150,7 +150,7 @@
                             </td>
 
                             <td class="py-3 text-xs text-gray-400 whitespace-nowrap">
-                                {{ $hafalan->created_at->format('d M Y') }}
+                                <p>{{ $hafalan->created_at->format('d M Y') }}</p>
                                 <p class="text-gray-300">{{ $hafalan->created_at->format('H:i') }}</p>
                             </td>
 

@@ -19,7 +19,7 @@
 
 <div class="max-w-2xl">
 
-    {{-- Kartu Info Setoran yang Dinilai --}}
+    {{-- Info Setoran yang Dinilai --}}
     <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
 
         <h3 class="font-semibold text-amber-800 mb-4 flex items-center gap-2">
@@ -54,7 +54,9 @@
             <div>
                 <p class="text-xs text-amber-600 font-medium mb-0.5">Jenis Setoran</p>
                 <span class="px-2 py-0.5 rounded-full text-xs font-medium
-                    {{ $hafalan->jenis === 'ziyadah' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700' }}">
+                    {{ $hafalan->jenis === 'ziyadah'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-blue-100 text-blue-700' }}">
                     {{ $hafalan->jenis === 'ziyadah' ? 'Ziyadah (Hafalan Baru)' : 'Murojaah (Pengulangan)' }}
                 </span>
             </div>
@@ -74,7 +76,7 @@
             <div class="col-span-2">
                 <p class="text-xs text-amber-600 font-medium mb-0.5">Waktu Setor</p>
                 <p class="text-sm text-gray-700">
-                    {{ $hafalan->created_at->translatedFormat('l, d F Y \p\u\k\u\l H:i') }}
+                    {{ $hafalan->created_at->format('d F Y, H:i') }}
                     <span class="text-gray-400 ml-1">({{ $hafalan->created_at->diffForHumans() }})</span>
                 </p>
             </div>
@@ -90,83 +92,55 @@
         <form method="POST" action="{{ route('guru.validasi.approve', $hafalan->id) }}">
             @csrf
 
-            {{-- ============================================
-                 PILIH NILAI
-                 ============================================ --}}
+            {{-- PILIH NILAI --}}
             <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Nilai Hafalan <span class="text-red-500">*</span>
                 </label>
-
                 <div class="grid grid-cols-4 gap-3">
 
-                    {{-- Nilai A --}}
                     <label class="relative cursor-pointer">
-                        <input
-                            type="radio"
-                            name="nilai"
-                            value="A"
-                            class="peer sr-only"
-                            {{ old('nilai') === 'A' ? 'checked' : '' }}
-                            required
-                        >
-                        <div class="border-2 rounded-xl p-4 text-center transition-all
+                        <input type="radio" name="nilai" value="A" class="peer sr-only"
+                            {{ old('nilai') === 'A' ? 'checked' : '' }} required>
+                        <div class="border-2 rounded-xl p-4 text-center transition-all cursor-pointer
                                     peer-checked:border-emerald-500 peer-checked:bg-emerald-50
-                                    border-gray-200 hover:border-gray-300 cursor-pointer">
+                                    border-gray-200 hover:border-gray-300">
                             <span class="text-3xl font-bold text-emerald-600 block mb-1">A</span>
                             <span class="text-xs text-gray-500 block">Sangat Baik</span>
                             <span class="text-xs text-emerald-500 block mt-0.5">Mutqin</span>
                         </div>
                     </label>
 
-                    {{-- Nilai B --}}
                     <label class="relative cursor-pointer">
-                        <input
-                            type="radio"
-                            name="nilai"
-                            value="B"
-                            class="peer sr-only"
-                            {{ old('nilai') === 'B' ? 'checked' : '' }}
-                        >
-                        <div class="border-2 rounded-xl p-4 text-center transition-all
+                        <input type="radio" name="nilai" value="B" class="peer sr-only"
+                            {{ old('nilai') === 'B' ? 'checked' : '' }}>
+                        <div class="border-2 rounded-xl p-4 text-center transition-all cursor-pointer
                                     peer-checked:border-blue-500 peer-checked:bg-blue-50
-                                    border-gray-200 hover:border-gray-300 cursor-pointer">
+                                    border-gray-200 hover:border-gray-300">
                             <span class="text-3xl font-bold text-blue-600 block mb-1">B</span>
                             <span class="text-xs text-gray-500 block">Baik</span>
                             <span class="text-xs text-blue-500 block mt-0.5">Lancar</span>
                         </div>
                     </label>
 
-                    {{-- Nilai C --}}
                     <label class="relative cursor-pointer">
-                        <input
-                            type="radio"
-                            name="nilai"
-                            value="C"
-                            class="peer sr-only"
-                            {{ old('nilai') === 'C' ? 'checked' : '' }}
-                        >
-                        <div class="border-2 rounded-xl p-4 text-center transition-all
+                        <input type="radio" name="nilai" value="C" class="peer sr-only"
+                            {{ old('nilai') === 'C' ? 'checked' : '' }}>
+                        <div class="border-2 rounded-xl p-4 text-center transition-all cursor-pointer
                                     peer-checked:border-amber-500 peer-checked:bg-amber-50
-                                    border-gray-200 hover:border-gray-300 cursor-pointer">
+                                    border-gray-200 hover:border-gray-300">
                             <span class="text-3xl font-bold text-amber-600 block mb-1">C</span>
                             <span class="text-xs text-gray-500 block">Cukup</span>
                             <span class="text-xs text-amber-500 block mt-0.5">Perlu latihan</span>
                         </div>
                     </label>
 
-                    {{-- Nilai D --}}
                     <label class="relative cursor-pointer">
-                        <input
-                            type="radio"
-                            name="nilai"
-                            value="D"
-                            class="peer sr-only"
-                            {{ old('nilai') === 'D' ? 'checked' : '' }}
-                        >
-                        <div class="border-2 rounded-xl p-4 text-center transition-all
+                        <input type="radio" name="nilai" value="D" class="peer sr-only"
+                            {{ old('nilai') === 'D' ? 'checked' : '' }}>
+                        <div class="border-2 rounded-xl p-4 text-center transition-all cursor-pointer
                                     peer-checked:border-red-400 peer-checked:bg-red-50
-                                    border-gray-200 hover:border-gray-300 cursor-pointer">
+                                    border-gray-200 hover:border-gray-300">
                             <span class="text-3xl font-bold text-red-500 block mb-1">D</span>
                             <span class="text-xs text-gray-500 block">Kurang</span>
                             <span class="text-xs text-red-400 block mt-0.5">Ulangi lagi</span>
@@ -174,15 +148,12 @@
                     </label>
 
                 </div>
-
                 @error('nilai')
                     <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
                 @enderror
             </div>
 
-            {{-- ============================================
-                 CATATAN GURU (OPSIONAL)
-                 ============================================ --}}
+            {{-- CATATAN GURU (OPSIONAL) --}}
             <div class="mb-8">
                 <label for="catatan_guru" class="block text-sm font-medium text-gray-700 mb-1.5">
                     Catatan Evaluasi
@@ -209,19 +180,14 @@
                 </div>
             </div>
 
-            {{-- ============================================
-                 TOMBOL SUBMIT
-                 ============================================ --}}
+            {{-- TOMBOL SUBMIT --}}
             <div class="flex items-center gap-3">
-                <button
-                    type="submit"
+                <button type="submit"
                     class="flex-1 bg-amber-500 hover:bg-amber-600 active:bg-amber-700
                            text-white font-semibold py-3 px-6 rounded-xl transition-colors
-                           focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-                >
+                           focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
                     ✅ Setujui & Simpan Penilaian
                 </button>
-
                 <a href="{{ route('guru.validasi.index') }}"
                    class="px-5 py-3 border border-gray-300 text-gray-600 hover:border-gray-400
                           hover:text-gray-800 font-medium rounded-xl transition-colors text-sm whitespace-nowrap">

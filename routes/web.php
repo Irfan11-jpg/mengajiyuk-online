@@ -43,8 +43,8 @@ Route::middleware(['auth', 'role:santri'])
         Route::get('/quran/{nomor}', [QuranController::class, 'show'])->name('quran.show');
 
         // Mhs 3: Form input & riwayat setoran hafalan
-        // PENTING: route /hafalan/create harus SEBELUM /hafalan/{id}
-        // agar Laravel tidak salah menganggap 'create' sebagai {id}
+        // PENTING: /hafalan/create harus SEBELUM /hafalan
+        // agar Laravel tidak salah baca 'create' sebagai parameter
         Route::get('/hafalan', [HafalanController::class, 'index'])->name('hafalan.index');
         Route::get('/hafalan/create', [HafalanController::class, 'create'])->name('hafalan.create');
         Route::post('/hafalan', [HafalanController::class, 'store'])->name('hafalan.store');

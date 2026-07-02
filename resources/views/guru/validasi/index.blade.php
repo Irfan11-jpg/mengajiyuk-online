@@ -57,7 +57,7 @@
 
 </div>
 
-{{-- Tabel Antrean Setoran Pending --}}
+{{-- Tabel Antrean Pending --}}
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
 
     <h3 class="font-semibold text-gray-700 mb-4">
@@ -87,7 +87,6 @@
                     @foreach($setoranPending as $setoran)
                         <tr class="text-gray-600 hover:bg-amber-50/30 transition-colors">
 
-                            {{-- Nama santri dengan avatar --}}
                             <td class="py-3">
                                 <div class="flex items-center gap-2.5">
                                     <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center
@@ -101,18 +100,15 @@
                                 </div>
                             </td>
 
-                            {{-- Nama surah --}}
                             <td class="py-3">
                                 <p class="font-medium text-gray-800">{{ $setoran->nama_surah }}</p>
                                 <p class="text-xs text-gray-400">Surah ke-{{ $setoran->nomor_surah }}</p>
                             </td>
 
-                            {{-- Rentang ayat --}}
                             <td class="py-3 whitespace-nowrap">
                                 Ayat {{ $setoran->ayat_awal }}–{{ $setoran->ayat_akhir }}
                             </td>
 
-                            {{-- Jenis setoran --}}
                             <td class="py-3">
                                 <span class="px-2 py-0.5 rounded-full text-xs font-medium
                                     {{ $setoran->jenis === 'ziyadah'
@@ -122,7 +118,6 @@
                                 </span>
                             </td>
 
-                            {{-- Kelancaran --}}
                             <td class="py-3">
                                 <span class="px-2 py-0.5 rounded-full text-xs font-medium
                                     {{ $setoran->kelancaran === 'mutqin'
@@ -134,13 +129,11 @@
                                 </span>
                             </td>
 
-                            {{-- Waktu setor --}}
                             <td class="py-3 text-xs text-gray-400">
                                 <p>{{ $setoran->created_at->format('d M Y') }}</p>
                                 <p class="text-gray-300">{{ $setoran->created_at->diffForHumans() }}</p>
                             </td>
 
-                            {{-- Tombol nilai --}}
                             <td class="py-3">
                                 <a href="{{ route('guru.validasi.grade', $setoran->id) }}"
                                    class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600
@@ -156,7 +149,6 @@
             </table>
         </div>
 
-        {{-- Pagination --}}
         @if($setoranPending->hasPages())
             <div class="mt-5 pt-4 border-t border-gray-100">
                 {{ $setoranPending->links() }}
@@ -204,7 +196,9 @@
                             <td class="py-3">{{ $setoran->ayat_awal }}–{{ $setoran->ayat_akhir }}</td>
                             <td class="py-3">
                                 <span class="px-2 py-0.5 rounded-full text-xs font-medium
-                                    {{ $setoran->jenis === 'ziyadah' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700' }}">
+                                    {{ $setoran->jenis === 'ziyadah'
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : 'bg-blue-100 text-blue-700' }}">
                                     {{ $setoran->jenis === 'ziyadah' ? 'Ziyadah' : 'Murojaah' }}
                                 </span>
                             </td>
