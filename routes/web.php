@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Route;
 // HALAMAN ROOT
 // =========================================================
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    return view('landing');
+})-> name('landing');
 
 // =========================================================
 // AUTH — LOGIN & LOGOUT (TANPA REGISTER)
