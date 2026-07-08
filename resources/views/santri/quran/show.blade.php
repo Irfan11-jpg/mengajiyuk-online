@@ -1,112 +1,168 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Detail Hafalan') }} — {{ $santri->nama }}
-            </h2>
-            <a href="{{ route('santri.quran.index') }}" class="text-sm text-indigo-600 hover:text-indigo-900">
-                &larr; Kembali ke daftar
+@extends('layouts.santri')
+
+@section('title', $surah['namaLatin'])
+@section('page-title', 'Quran Reader')
+
+@section('content')
+
+<div class="space-y-6">
+
+    {{-- Tombol Kembali --}}
+    <div>
+        <a href="{{ route('santri.quran.index') }}"
+           class="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium">
+            ← Kembali ke Daftar Surah
+        </a>
+    </div>
+
+    {{-- Header Surah --}}
+    <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl shadow-lg p-8 text-white">
+
+        <div class="text-center">
+
+            <p class="text-6xl mb-4">
+                {{ $surah['nama'] }}
+            </p>
+
+            <h1 class="text-3xl font-bold">
+                {{ $surah['namaLatin'] }}
+            </h1>
+
+            <p class="text-emerald-100 mt-2">
+                {{ $surah['arti'] }}
+            </p>
+
+            <div class="mt-6 flex justify-center gap-3 flex-wrap">
+
+                <span class="bg-white/20 px-4 py-2 rounded-full">
+                    {{ $surah['jumlahAyat'] }} Ayat
+                </span>
+
+                <span class="bg-white/20 px-4 py-2 rounded-full">
+                    {{ $surah['tempatTurun'] }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {{-- Audio --}}
+    @if(isset($surah['audioFull']))
+    <div class="bg-white rounded-2xl shadow p-6">
+
+        <h2 class="font-bold text-lg mb-4">
+            🎧 Murottal Surah
+        </h2>
+
+        <audio controls class="w-full">
+
+            <source src="{{ is_array($surah['audioFull']) ? ($surah['audioFull']['05'] ?? reset($surah['audioFull'])) : $surah['audioFull'] }}">
+
+            Browser Anda tidak mendukung audio.
+
+        </audio>
+
+    </div>
+    @endif
+
+    {{-- Bismillah --}}
+    @if($surah['nomor'] != 9)
+
+    <div class="bg-white rounded-2xl shadow p-8 text-center">
+
+        <p class="text-5xl leading-loose">
+
+            ﷽
+
+        </p>
+
+    </div>
+
+    @endif
+
+    {{-- Daftar Ayat --}}
+    <div class="space-y-5">
+
+@foreach($surah['ayat'] as $ayat)
+
+<div class="bg-white rounded-2xl shadow p-6">
+
+    <div class="flex justify-between items-center mb-5">
+
+        <span class="bg-emerald-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">
+
+            {{ $ayat['nomorAyat'] }}
+
+        </span>
+
+    </div>
+
+    <p class="text-right text-4xl leading-loose mb-8">
+
+        {{ $ayat['teksArab'] }}
+
+    </p>
+
+    <p class="italic text-emerald-700 mb-4">
+
+        {{ $ayat['teksLatin'] }}
+
+    </p>
+
+    <p class="text-gray-700 leading-8">
+
+        {{ $ayat['teksIndonesia'] }}
+
+    </p>
+
+</div>
+
+@endforeach
+
+    </div>    
+    {{-- Navigasi Surah --}}
+    <div class="flex justify-between items-center mt-8">
+
+        {{-- Surah Sebelumnya --}}
+        <div>
+            @if($surahSebelumnya)
+                <a href="{{ route('santri.quran.show', $surahSebelumnya['nomor']) }}"
+                   class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-3 rounded-xl transition">
+                    ⬅️
+                    <div class="text-left">
+                        <div class="text-xs text-gray-500">Surah Sebelumnya</div>
+                        <div class="font-semibold">{{ $surahSebelumnya['namaLatin'] }}</div>
+                    </div>
+                </a>
+            @endif
+        </div>
+
+        {{-- Kembali --}}
+        <div>
+            <a href="{{ route('santri.quran.index') }}"
+               class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold transition">
+                📖 Daftar Surah
             </a>
         </div>
-    </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-
-            @if (session('success'))
-                <div class="p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">
-                    {{ session('success') }}
-                </div>
+        {{-- Surah Berikutnya --}}
+        <div>
+            @if($surahBerikutnya)
+                <a href="{{ route('santri.quran.show', $surahBerikutnya['nomor']) }}"
+                   class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-3 rounded-xl transition">
+                    <div class="text-right">
+                        <div class="text-xs text-gray-500">Surah Berikutnya</div>
+                        <div class="font-semibold">{{ $surahBerikutnya['namaLatin'] }}</div>
+                    </div>
+                    ➡️
+                </a>
             @endif
-
-            {{-- Ringkasan --}}
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white shadow-sm rounded-lg p-5">
-                    <p class="text-sm text-gray-500">Juz Terakhir</p>
-                    <p class="text-2xl font-semibold text-gray-800">Juz {{ $juzTerakhir }} / 30</p>
-                </div>
-                <div class="bg-white shadow-sm rounded-lg p-5">
-                    <p class="text-sm text-gray-500">Total Setoran</p>
-                    <p class="text-2xl font-semibold text-gray-800">{{ $totalSetoran }}</p>
-                </div>
-                <div class="bg-white shadow-sm rounded-lg p-5">
-                    <p class="text-sm text-gray-500">Total Murojaah</p>
-                    <p class="text-2xl font-semibold text-gray-800">{{ $totalMurojaah }}</p>
-                </div>
-            </div>
-
-            {{-- Tabel riwayat --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-lg font-medium text-gray-800 mb-4">Riwayat Setoran & Murojaah</h3>
-
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Surah</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Juz</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ayat</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($progresses as $progres)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-3 whitespace-nowrap text-gray-600">
-                                            {{ $progres->tanggal->translatedFormat('d M Y') }}
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap font-medium text-gray-900">
-                                            {{ $progres->surah }}
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-gray-600">
-                                            Juz {{ $progres->juz }}
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-gray-600">
-                                            {{ $progres->ayat_mulai }} - {{ $progres->ayat_selesai }}
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap">
-                                            <span class="px-2 py-1 text-xs rounded-full
-                                                {{ $progres->jenis === 'setoran' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700' }}">
-                                                {{ ucfirst($progres->jenis) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap">
-                                            @php
-                                                $statusColor = match($progres->status) {
-                                                    'lancar' => 'bg-green-100 text-green-700',
-                                                    'kurang_lancar' => 'bg-yellow-100 text-yellow-700',
-                                                    default => 'bg-red-100 text-red-700',
-                                                };
-                                            @endphp
-                                            <span class="px-2 py-1 text-xs rounded-full {{ $statusColor }}">
-                                                {{ ucwords(str_replace('_', ' ', $progres->status)) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-gray-600 max-w-xs truncate" title="{{ $progres->catatan }}">
-                                            {{ $progres->catatan ?? '-' }}
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="px-4 py-6 text-center text-gray-500">
-                                            Belum ada riwayat hafalan untuk santri ini.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="mt-6">
-                        {{ $progresses->links() }}
-                    </div>
-                </div>
-            </div>
-
         </div>
+
     </div>
-</x-app-layout>
+
+</div>
+
+@endsection
