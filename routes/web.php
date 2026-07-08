@@ -5,6 +5,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HafalanController;
 use App\Http\Controllers\QuranController;
 use App\Http\Controllers\ValidasiController;
+use App\Http\Controllers\JurnalIbadahController;
+use App\Http\Controllers\BadgeController;
 use Illuminate\Support\Facades\Route;
 
 // =========================================================
@@ -34,20 +36,50 @@ Route::middleware(['auth', 'role:santri'])
     ->name('santri.')
     ->group(function () {
 
-        // Mhs 1: Dashboard & progres 30 juz
-        Route::get('/dashboard', [DashboardController::class, 'santri'])->name('dashboard');
-        Route::get('/hafalan/progres', [DashboardController::class, 'progres'])->name('hafalan.progres');
+        // =====================================================
+        // DASHBOARD
+        // =====================================================
+        Route::get('/dashboard', [DashboardController::class, 'santri'])
+            ->name('dashboard');
 
-        // Mhs 2: Quran Reader
-        Route::get('/quran', [QuranController::class, 'index'])->name('quran.index');
-        Route::get('/quran/{nomor}', [QuranController::class, 'show'])->name('quran.show');
+        Route::get('/hafalan/progres', [DashboardController::class, 'progres'])
+            ->name('hafalan.progres');
 
-        // Mhs 3: Form input & riwayat setoran hafalan
-        // PENTING: /hafalan/create harus SEBELUM /hafalan
-        // agar Laravel tidak salah baca 'create' sebagai parameter
-        Route::get('/hafalan', [HafalanController::class, 'index'])->name('hafalan.index');
-        Route::get('/hafalan/create', [HafalanController::class, 'create'])->name('hafalan.create');
-        Route::post('/hafalan', [HafalanController::class, 'store'])->name('hafalan.store');
+        // =====================================================
+        // QURAN READER
+        // =====================================================
+        Route::get('/quran', [QuranController::class, 'index'])
+            ->name('quran.index');
+
+        Route::get('/quran/{nomor}', [QuranController::class, 'show'])
+            ->name('quran.show');
+
+        // =====================================================
+        // JURNAL IBADAH
+        // =====================================================
+        Route::get('/jurnal-ibadah', [JurnalIbadahController::class, 'index'])
+            ->name('jurnal.index');
+
+        Route::post('/jurnal-ibadah', [JurnalIbadahController::class, 'store'])
+            ->name('jurnal.store');
+
+        // =====================================================
+        // BADGE & STREAK
+        // =====================================================
+        Route::get('/badge-streak', [BadgeController::class, 'index'])
+            ->name('badge.index');
+
+        // =====================================================
+        // HAFALAN
+        // =====================================================
+        Route::get('/hafalan', [HafalanController::class, 'index'])
+            ->name('hafalan.index');
+
+        Route::get('/hafalan/create', [HafalanController::class, 'create'])
+            ->name('hafalan.create');
+
+        Route::post('/hafalan', [HafalanController::class, 'store'])
+            ->name('hafalan.store');
 
     });
 
@@ -59,12 +91,18 @@ Route::middleware(['auth', 'role:guru'])
     ->name('guru.')
     ->group(function () {
 
-        // Mhs 1: Dashboard guru
-        Route::get('/dashboard', [DashboardController::class, 'guru'])->name('dashboard');
+        // Dashboard Guru
+        Route::get('/dashboard', [DashboardController::class, 'guru'])
+            ->name('dashboard');
 
-        // Mhs 3: Validasi setoran hafalan
-        Route::get('/validasi', [ValidasiController::class, 'index'])->name('validasi.index');
-        Route::get('/validasi/{id}/grade', [ValidasiController::class, 'grade'])->name('validasi.grade');
-        Route::post('/validasi/{id}/approve', [ValidasiController::class, 'approve'])->name('validasi.approve');
+        // Validasi Hafalan
+        Route::get('/validasi', [ValidasiController::class, 'index'])
+            ->name('validasi.index');
+
+        Route::get('/validasi/{id}/grade', [ValidasiController::class, 'grade'])
+            ->name('validasi.grade');
+
+        Route::post('/validasi/{id}/approve', [ValidasiController::class, 'approve'])
+            ->name('validasi.approve');
 
     });

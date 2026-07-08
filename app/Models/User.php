@@ -25,7 +25,6 @@ class User extends Authenticatable
 
     /**
      * Kolom yang TIDAK boleh ditampilkan saat data diubah ke JSON atau array.
-     * Melindungi password agar tidak bocor ke response API atau view.
      */
     protected $hidden = [
         'password',
@@ -45,15 +44,6 @@ class User extends Authenticatable
 
     // =========================================================
     // HELPER ROLE
-    // Fungsi sederhana untuk mengecek role user yang sedang login.
-    //
-    // Cara pakai di controller:
-    //   Auth::user()->isGuru()
-    //   Auth::user()->isSantri()
-    //
-    // Cara pakai di blade view:
-    //   @if(Auth::user()->isGuru())
-    //   @if(Auth::user()->isSantri())
     // =========================================================
 
     /**
@@ -78,12 +68,6 @@ class User extends Authenticatable
 
     /**
      * Semua setoran hafalan yang dimiliki santri ini.
-     * Satu santri bisa punya banyak setoran hafalan.
-     *
-     * Cara pakai di controller:
-     *   $santri->hafalans()->get()
-     *   $santri->hafalans()->approved()->count()
-     *   $santri->hafalans()->pending()->get()
      */
     public function hafalans(): HasMany
     {
@@ -91,12 +75,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Semua setoran hafalan yang sudah dinilai oleh guru ini.
-     * Satu guru bisa menilai banyak setoran dari berbagai santri.
-     *
-     * Cara pakai di controller:
-     *   $guru->hafalanDinilai()->count()
-     *   $guru->hafalanDinilai()->latest()->get()
+     * Semua setoran hafalan yang sudah dinilai guru.
      */
     public function hafalanDinilai(): HasMany
     {
@@ -104,17 +83,35 @@ class User extends Authenticatable
     }
 
     // =========================================================
-    // SCOPE QUERY
-    // Fungsi untuk memfilter query langsung dari model.
-    //
-    // Cara pakai:
-    //   User::santri()->get()              → semua santri
-    //   User::guru()->get()                → semua guru
-    //   User::santri()->where('kelas','10A')->get() → santri kelas 10A
+    // RELASI JURNAL IBADAH
     // =========================================================
 
     /**
-     * Filter query hanya mengembalikan user dengan role santri.
+     * Semua jurnal ibadah milik user.
+     */
+    public function journals(): HasMany
+    {
+        return $this->hasMany(IbadahJournal::class, 'user_id');
+    }
+
+    // =========================================================
+    // RELASI BADGE
+    // =========================================================
+
+    /**
+     * Semua badge yang telah diperoleh user.
+     */
+    public function userBadges(): HasMany
+    {
+        return $this->hasMany(UserBadge::class, 'user_id');
+    }
+
+    // =========================================================
+    // SCOPE QUERY
+    // =========================================================
+
+    /**
+     * Filter query hanya user santri.
      */
     public function scopeSantri($query)
     {
@@ -122,10 +119,48 @@ class User extends Authenticatable
     }
 
     /**
-     * Filter query hanya mengembalikan user dengan role guru.
+     * Filter query hanya user guru.
      */
     public function scopeGuru($query)
     {
         return $query->where('role', 'guru');
+    }
+
+    // =========================================================
+    // HELPER STREAK
+    // =========================================================
+
+    /**
+     * Menghitung streak berdasarkan jurnal ibadah.
+     */
+    public function currentStreak(): int
+    {
+        $dates = $this->journals()
+            ->orderByDesc('tanggal')
+            ->pluck('tanggal')
+            ->map(fn ($d) => \Carbon\Carbon::parse($d)->toDateString())
+            ->toArray();
+
+        if (empty($dates)) {
+            return 0;
+        }
+
+        $streak = 0;
+        $current = now()->toDateString();
+
+        foreach ($dates as $date) {
+
+            if ($date === $current) {
+                $streak++;
+                $current = now()->parse($current)->subDay()->toDateString();
+            } elseif ($date === now()->parse($current)->subDay()->toDateString()) {
+                $streak++;
+                $current = now()->parse($current)->subDay()->toDateString();
+            } else {
+                break;
+            }
+        }
+
+        return $streak;
     }
 }

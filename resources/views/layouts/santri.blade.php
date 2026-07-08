@@ -62,24 +62,24 @@
                 <span class="text-base">📖</span>
                 <span>Tracker Hafalan</span>
             </a>
-            
-            <div class="pt-3 pb-1">
-                <p class="text-emerald-400 text-xs font-medium uppercase tracking-wider px-3 mb-2">
-                    Segera Hadir
-                </p>
-            </div>
 
-            <span class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-emerald-400 opacity-50 cursor-not-allowed">
-                <span class="text-base">📜</span>
-                <span>Jurnal Ibadah</span>
-                <span class="ml-auto text-xs bg-emerald-900 text-emerald-500 px-1.5 py-0.5 rounded">Soon</span>
-            </span>
+                <a href="{{ route('santri.jurnal.index') }}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                        {{ request()->routeIs('santri.jurnal.*')
+                            ? 'bg-emerald-600 text-white font-medium'
+                            : 'text-emerald-100 hover:bg-emerald-700/50' }}">
+                    <span class="text-base">📜</span>
+                    <span>Jurnal Ibadah</span>
+                </a>
 
-            <span class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-emerald-400 opacity-50 cursor-not-allowed">
-                <span class="text-base">🏅</span>
-                <span>Badge & Streak</span>
-                <span class="ml-auto text-xs bg-emerald-900 text-emerald-500 px-1.5 py-0.5 rounded">Soon</span>
-            </span>
+                <a href="{{ route('santri.badge.index') }}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+                        {{ request()->routeIs('santri.badge.*')
+                            ? 'bg-emerald-600 text-white font-medium'
+                            : 'text-emerald-100 hover:bg-emerald-700/50' }}">
+                    <span class="text-base">🏅</span>
+                    <span>Badge & Streak</span>
+                </a>
 
                 <a href="{{ route('santri.quran.index') }}"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
