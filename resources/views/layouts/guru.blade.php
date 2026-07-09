@@ -53,12 +53,6 @@
                 <span>Dashboard</span>
             </a>
 
-            <div class="pt-3 pb-1">
-                <p class="text-amber-400 text-xs font-medium uppercase tracking-wider px-3 mb-2">
-                    Segera Hadir
-                </p>
-            </div>
-
             <a href="{{ route('guru.validasi.index') }}"
                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
                       {{ request()->routeIs('guru.validasi.*')
@@ -67,30 +61,6 @@
                 <span class="text-base">✅</span>
                 <span>Validasi Setoran</span>
             </a>
-            <span class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-amber-400 opacity-50 cursor-not-allowed">
-                <span class="text-base">📚</span>
-                <span>Buku Induk</span>
-                <span class="ml-auto text-xs bg-amber-950 text-amber-600 px-1.5 py-0.5 rounded">Soon</span>
-            </span>
-
-            <span class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-amber-400 opacity-50 cursor-not-allowed">
-                <span class="text-base">🔔</span>
-                <span>Alert Santri</span>
-                <span class="ml-auto text-xs bg-amber-950 text-amber-600 px-1.5 py-0.5 rounded">Soon</span>
-            </span>
-
-            <span class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-amber-400 opacity-50 cursor-not-allowed">
-                <span class="text-base">📊</span>
-                <span>Laporan & Ekspor</span>
-                <span class="ml-auto text-xs bg-amber-950 text-amber-600 px-1.5 py-0.5 rounded">Soon</span>
-            </span>
-
-            <span class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-amber-400 opacity-50 cursor-not-allowed">
-                <span class="text-base">🏫</span>
-                <span>Manajemen Kelas</span>
-                <span class="ml-auto text-xs bg-amber-950 text-amber-600 px-1.5 py-0.5 rounded">Soon</span>
-            </span>
-
         </nav>
 
         {{-- Tombol Logout --}}
