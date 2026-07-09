@@ -88,7 +88,7 @@
                 <button
                     class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold">
 
-                    💾 Simpan Jurnal
+                    Simpan Jurnal
 
                 </button>
 
